@@ -1,4 +1,5 @@
 __version__ = "0.1.0"
+import sys
 from pprint import pprint
 
 
@@ -9,7 +10,9 @@ def solve(n: int, elements: list[tuple[int, int]], W: int) -> int:
     # dp = [[-1 for i in range(W + 1)] for j in range(len(elements) + 1)]
     # return rec_v2(0, W, n, elements, dp)
 
-    return use_dp_table(n, elements, W)
+    # return use_dp_table(n, elements, W)
+
+    return use_updated_dp_table(n, elements, W)
 
 
 # i番目以降の品物から重さの総和がj以下になるように選ぶ
@@ -65,9 +68,32 @@ def use_dp_table(n, elements: list[tuple[int, int]], W: int) -> int:
     return dp[0][W]
 
 
+# 01ナップサック問題その2（DPの対象を入れ替える）
+def use_updated_dp_table(n, elements: list[tuple[int, int]], W: int) -> int:
+    MAX_N, MAX_V = 100, 100
+    dp: list[list[int]] = [[0 for i in range(MAX_N * MAX_V + 1)] for j in range(n + 1)]
+
+    for i in range(MAX_N * MAX_N + 1):
+        dp[0][i] = sys.maxsize
+
+    dp[0][0] = 0
+    for i in range(n):
+        for j in range(100 * 100 + 1):
+            if j < elements[i][1]:
+                dp[i + 1][j] = dp[i][j]
+            else:
+                dp[i + 1][j] = min(dp[i][j], dp[i][j - elements[i][1]] + elements[i][0])
+
+    res: int = 0
+    for i in range(MAX_N * MAX_V + 1):
+        if dp[n][i] <= W:
+            res = i
+    return res
+
+
 def main():
     n = 4
-    elements = [(2, 3), (1, 2), (3, 4), (2, 2)]
+    elements = [(2, 3), (1, 2), (3, 4), (2, 2)]  # (w, v)
     W = 5
     print(solve(n, elements, W))
 
